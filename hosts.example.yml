@@ -20,26 +20,16 @@ proj2:
     unbound_managing_domains:
       - bar.example.com
 
-unbound:
-  children:
-    proj1:
-    proj2:
+all:
   vars:
+    ansible_user: root
+    unbound_conf_repo:
+      # Put your private key in ~/.ssh/ in prior to pull and push without passwords.
+      repo: git@gitlab.example.com:test-user/unbound-conf-repo.git
+      dest: "{{ ansible_env.HOME }}/unbound-conf-repo"
+      version: master
+    unbound_image: localhost/my-unbound:ci
     unbound_allowed_networks:
       - 192.168.122.0/24
     unbound_default_nameservers:
       - 192.168.122.1
-
-tower:
-  hosts:
-    tower.example.com:
-  vars:
-    unbound_conf_repo:
-      # Put your private key in ~/.ssh/ in prior to pull and push without passwords.
-      repo: git@gitlab.example.com:test-user/unbound-conf-repo.git
-      dest: "{{ ansible_env.HOME }}/unbound_conf_repo"
-      version: master
-
-all:
-  vars:
-    ansible_user: root
