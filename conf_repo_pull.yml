@@ -1,0 +1,27 @@
+---
+- name: Pull unbound-conf-repo to local
+  hosts: localhost
+  connection: local
+  become: true
+  tasks:
+
+    # Make sure git+ssh works
+#    - name: Setting ~/.gitconfig
+#      git_config:
+#        name: "{{ item.name }}"
+#        value: "{{ item.value }}"
+#        scope: global
+#      loop:
+#        - name: user.name
+#          value: Ansible Tower
+#        - name: user.email
+#          value: tower@example.com
+#        - name: http.sslVerify
+#          value: False
+
+    - name: Clone the repository
+      git:
+        repo: "{{ unbound_conf_repo.repo }}"
+        dest: "{{ unbound_conf_repo.dest }}"
+        version: "{{ unbound_conf_repo.version }}"
+        accept_hostkey: true

@@ -1,0 +1,12 @@
+---
+- name: Reset Unbound servers
+  hosts: unbound
+  become: true
+  tasks:
+    - shell: rm -rf /etc/unbound/conf.d/*
+    - shell: rm -rf /etc/unbound/keys.d/*
+    - shell: rm -rf /etc/unbound/local.d/*
+    - command: /usr/sbin/unbound-checkconf
+    - service:
+        name: unbound
+        state: restarted

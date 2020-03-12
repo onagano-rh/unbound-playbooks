@@ -1,0 +1,15 @@
+# default is "transparent"
+local-zone: "{{ target_domain }}." static
+
+local-data: "hoge.{{ target_domain }}.     A   1.2.3.4"
+#local-data: "4.3.2.1.in-addr.arpa. PTR hoge.{{ target_domain }}."
+local-data-ptr: "1.2.3.4 hoge.{{ target_domain }}."
+
+local-data: "foo.{{ target_domain }}.      A   1.2.3.5"
+local-data-ptr: "1.2.3.5 foo.{{ target_domain }}."
+
+local-data: "bar.{{ target_domain }}.      A   1.2.3.6"
+local-data-ptr: "1.2.3.6 bar.{{ target_domain }}."
+
+local-data: "buzz.{{ target_domain }}.      A   1.2.3.7"
+local-data-ptr: "1.2.3.7 buzz.{{ target_domain }}."

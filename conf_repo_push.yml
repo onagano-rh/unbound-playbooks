@@ -1,0 +1,48 @@
+---
+- name: Push unbound-conf-repo to GitLab
+  hosts: localhost
+  connection: local
+  become: true
+
+  vars:
+    updated_files:
+      - foo.example.com.conf
+      - bar.example.com.conf
+    commit_message: |
+      Updated by Ansible Tower.
+
+  tasks:
+    - name: Git status to check changes to commit 1
+      command:
+        cmd: git status
+        chdir: "{{ unbound_conf_repo.dest }}"
+      register: git_status_res1
+      changed_when: false
+
+    - name: Stage specified files
+      command:
+        cmd: git add {{ updated_files | join(' ') }}
+        chdir: "{{ unbound_conf_repo.dest }}"
+      when: '"nothing to commit," not in git_status_res1.stdout'
+      register: git_add_res
+
+    - name: Git status to check changes to commit 2
+      command:
+        cmd: git status
+        chdir: "{{ unbound_conf_repo.dest }}"
+      register: git_status_res2
+      changed_when: false
+
+    - name: Commit locally
+      command:
+        cmd: git commit -m '{{ commit_message }}'
+        chdir: "{{ unbound_conf_repo.dest }}"
+      when: '"Changes to be committed:" in git_status_res2.stdout'
+      register: git_commit_res
+
+    - name: Push to GitLab
+      command:
+        cmd: git push
+        chdir: "{{ unbound_conf_repo.dest }}"
+      when: git_commit_res is changed
+

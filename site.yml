@@ -1,0 +1,45 @@
+---
+- name: Provision Unbound servers
+  hosts: all
+  become: true
+  roles:
+    - role: ansible-role-unbound
+      vars:
+        unbound_listen_address: 0.0.0.0
+        unbound_network_cidr_to_allow: 0.0.0.0/0
+        unbound_default_nameserver: 192.168.122.1
+      tags:
+        - unbound
+  # When rolling update
+  #serial:
+  #  - 1
+  tasks:
+
+    - name: Check necessary variables
+      assert:
+        that:
+          - target_domain | d()
+        msg: |
+          Usage:
+            ansible-playbook site.yml -e target_domain=proj1.example.com
+
+    - name: Copy local zone data
+      template:
+        src: zones/{{ target_domain }}.conf.j2
+        dest: /etc/unbound/local.d/{{ target_domain }}.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify:
+        - Restart Unbound
+
+    - name: Validate the config files
+      command: /usr/sbin/unbound-checkconf
+      changed_when: false
+
+  handlers:
+
+    - name: Restart Unbound
+      service:
+        name: unbound
+        state: restarted

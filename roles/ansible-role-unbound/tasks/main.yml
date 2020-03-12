@@ -1,0 +1,67 @@
+---
+- name: Install Unbound
+  dnf:
+    name:
+      - unbound
+      - bind-utils
+    state: present
+
+- name: Basic server setting for Unbound
+  template:
+    src: my-server.conf.j2
+    dest: /etc/unbound/conf.d/my-server.conf
+    # This fails because of the chroot setting and the location of %s.
+    #validate: unbound-checkconf %s
+
+- name: Validate the config files
+  command: /usr/sbin/unbound-checkconf
+  changed_when: false
+
+- name: Delete some default files
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/unbound/conf.d/example.com.conf
+    - /etc/unbound/keys.d/example.com.key
+    - /etc/unbound/local.d/block-example.com.conf
+
+- name: Open ports for DNS service
+  firewalld:
+    service: dns
+    permanent: true
+    immediate: true
+    state: enabled
+
+- name: Make sure Unbound started
+  service:
+    name: unbound
+    state: started
+
+- name: Copy NM dispatcher script
+  template:
+    src: 15-resolv.j2
+    dest: /etc/NetworkManager/dispatcher.d/15-resolv
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy custom resolv.conf
+  template:
+    src: resolv.conf.custom.j2
+    dest: /etc/resolv.conf.custom
+    owner: root
+    group: root
+    mode: '0744'
+
+- name: Test if the server already set
+  command: grep 127.0.0.1 /etc/resolv.conf
+  failed_when: false
+  changed_when: false
+  register: res
+
+- name: Restart NM if necessary
+  service:
+    name: NetworkManager
+    state: restarted
+  when: res.rc != 0

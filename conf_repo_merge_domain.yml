@@ -1,0 +1,14 @@
+---
+- block:
+    - name: Find local conf file
+      set_fact:
+        local_conf_file:
+          "{{ unbound_conf_repo.dest }}/{{ target_domain }}.conf"
+
+#    - name: Check if the file exists
+#      assert:
+#        that:
+#          - '{{ local_conf_file }} is exists'
+
+  delegate_to: localhost
+  run_once: true
