@@ -11,10 +11,14 @@
 #          - '{{ local_conf_file }} is exists'
 
     - name: Copy conf file into the container
-      command: >-
-        podman cp
-        {{ local_conf_file }}
-        {{ container_name }}:/etc/unbound/local.d/
+      command: podman ps -a
+              #        podman cp
+              #        {{ local_conf_file }}
+              #        {{ container_name }}:/etc/unbound/local.d/
+      register: res
+
+    - debug:
+        var: res
 
   delegate_to: localhost
   run_once: true
