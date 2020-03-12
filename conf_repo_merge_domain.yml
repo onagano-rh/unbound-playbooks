@@ -21,4 +21,5 @@
         var: res
 
   delegate_to: localhost
+  connection: local
   run_once: true
