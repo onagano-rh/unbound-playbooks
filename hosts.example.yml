@@ -22,9 +22,13 @@ proj2:
 
 all:
   hosts:
+    localhost:
+      # Ensure ssh is used (not local)
+      ansible_connection: ssh
+      foo: value
     tower.example.com:
-      vars:
-        hoge: value
+      ansible_connection: ssh
+      hoge: value
   vars:
     ansible_user: root
     unbound_conf_repo:
