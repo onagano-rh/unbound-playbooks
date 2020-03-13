@@ -22,9 +22,6 @@ proj2:
 
 all:
   hosts:
-    localhost:
-      # Ensure ssh is used (not local)
-      ansible_connection: ssh
     tower.example.com:
       vars:
         hoge: value
