@@ -21,6 +21,10 @@ proj2:
       - bar.example.com
 
 all:
+  hosts:
+    localhost:
+      # Ensure ssh is used (not local)
+      ansible_connection: ssh
   vars:
     ansible_user: root
     unbound_conf_repo:
