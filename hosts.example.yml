@@ -25,6 +25,9 @@ all:
     localhost:
       # Ensure ssh is used (not local)
       ansible_connection: ssh
+    tower.example.com:
+      vars:
+        hoge: value
   vars:
     ansible_user: root
     unbound_conf_repo:
