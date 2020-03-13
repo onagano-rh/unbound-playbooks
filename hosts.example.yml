@@ -31,6 +31,7 @@ all:
       hoge: value
   vars:
     ansible_user: root
+    ansible_connection: ssh
     unbound_conf_repo:
       # Put your private key in ~/.ssh/ in prior to pull and push without passwords.
       repo: git@gitlab.example.com:test-user/unbound-conf-repo.git
