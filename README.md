@@ -11,6 +11,7 @@
 Inventory
 ================
 
+Install "netaddr" Python package because "ipv4" Ansible filter is used.
 
 Playbooks and Roles
 ================

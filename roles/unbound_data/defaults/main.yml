@@ -1,2 +1,39 @@
 ---
-# defaults file for roles/unbound_data
+dns_entries: []
+
+# 2 level of hierarchy
+ubd_str_hgd_list: |
+  {% for host in groups['unbound'] %}
+  {% for group in hostvars[host].group_names %}
+  {% for domain in hostvars[host].unbound_managing_domains %}
+  {% if group != "unbound" %}
+  - host: {{ host }}
+    group: {{ group }}
+    domain: {{ domain }}
+  {% endif %}
+  {% endfor %}
+  {% endfor %}
+  {% endfor %}
+
+ubd_hgd_list: "{{ ubd_str_hgd_list | from_yaml }}"
+
+# not unique
+ubd_hosts: "{{ ubd_hgd_list | map(attribute='host') | list }}"
+ubd_groups: "{{ ubd_hgd_list | map(attribute='group') | list }}"
+ubd_domains: "{{ ubd_hgd_list | map(attribute='domain') | list }}"
+
+# keys are not unique, last value is adopted.
+ubd_dh_dict: "{{ dict( ubd_domains | zip(ubd_hosts) ) }}"
+ubd_dg_dict: "{{ dict( ubd_domains | zip(ubd_groups) ) }}"
+
+# 0 or single limit
+ubd_target_group: "{{ ansible_limit | default('unbound') }}"
+
+str_ubd_target_domains: |
+  {% for host in groups[ubd_target_group] %}
+  {% for domain in hostvars[host].unbound_managing_domains %}
+  - {{ domain }}
+  {% endfor %}
+  {% endfor %}
+
+ubd_target_domains: "{{ str_ubd_target_domains | from_yaml | unique }}"
