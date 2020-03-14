@@ -15,6 +15,36 @@ Inventory
 Playbooks and Roles
 ================
 
+Pre-commit using yamllint and ansible-lint
+================
+
+To install:
+
+    pip install pre-commit yamllint ansible-lint
+
+Or ("molecule" has them as dependencies):
+
+    pip install molecule
+
+Configuraiton:
+
+    pre-commit sample-config > .pre-commit-config.yaml
+    vi .pre-commit-config.yaml
+
+- For yamllint
+  - https://yamllint.readthedocs.io/en/stable/integration.html#integration-with-pre-commit
+- For ansible-lint
+  - https://github.com/ansible/ansible-lint#pre-commit-setup
+
+To run against all files for test:
+
+    pre-commit run --all-files
+
+To run before every Git commit:
+
+    pre-commit install
+
+
 
 Tasks
 ================
