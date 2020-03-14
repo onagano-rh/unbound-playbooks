@@ -62,7 +62,8 @@ Tasks
   - awx can't do sudo on tower host
   - set all and delegate to exploit --limit
 - todo: don't start my-unbound always
-- todo: instead, test start and commit for fast startup
-- todo: exclusive control for git repo and container
+- deploy playbook
+  - todo: instead, test start and commit for fast startup
+  - todo: install bind-utils on tower
+  - todo: exclusive control for git repo and container
 - todo: not git private key, do it inprior by yourself
-- todo: install bind-utils on tower

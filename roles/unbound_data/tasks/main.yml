@@ -44,12 +44,13 @@
 
 - name: Wait for the container started
   # BUG WORKAROUND: Test inside container.
-  command: podman exec test dig @localhost localhost
+  command: >-
+    podman exec {{ podman_container_id }} dig @localhost localhost
   changed_when: false
   register: res_podman_exec
   until: res_podman_exec.rc == 0
-  retries: 10
-  delay: 3
+  retries: 30
+  delay: 10
 
 - debug:
     var: playbook_dir
