@@ -36,14 +36,11 @@
     awk -F ':' '/udp/ {print $2}'
   register: res_podman_port
 
-- debug:
-    var: res_podman_port
-
 # BUG: Can't connect to the port actually. Podman network is still buggy?
 # - name: Wait for the container started
 #   wait_for:
 #     host: 127.0.0.1
-#     port: "{{ res_podman_port }}"
+#     port: "{{ res_podman_port.stdout }}"
 
 - name: Wait for the container started
   # BUG WORKAROUND: Test inside container.
@@ -53,3 +50,12 @@
   until: res_podman_exec.rc == 0
   retries: 10
   delay: 3
+
+- debug:
+    var: playbook_dir
+
+- name: Clone Unbound data repository
+  git:
+    repo: "{{ unbound_data.repo }}"
+    version: "{{ unbound_data.version }}"
+    dest: "{{ playbook_dir }}/unbound-data"
