@@ -24,6 +24,8 @@
     podman run --rm -d -p 53/tcp -p 53/udp
     {{ unbound_container.image }}
   register: res_podman_run
+  # notify:
+  #   - Cleanup Unbound Podman container
 
 - name: Memoize the container ID
   set_fact:
@@ -49,14 +51,28 @@
   changed_when: false
   register: res_podman_exec
   until: res_podman_exec.rc == 0
-  retries: 30
-  delay: 10
+  # timeout is 60 sec
+  retries: 12
+  delay: 5
+
+- name: Memoize the repository path
+  set_fact:
+    unbound_data_dir: "{{ playbook_dir }}/unbound-data"
 
 - debug:
-    var: playbook_dir
+    var: unbound_data_dir
 
 - name: Clone Unbound data repository
   git:
     repo: "{{ unbound_data.repo }}"
     version: "{{ unbound_data.version }}"
-    dest: "{{ playbook_dir }}/unbound-data"
+    dest: "{{ unbound_data_dir }}"
+  # notiry:
+  #   - Cleanup Unbound data repository
+
+- name: Copy Unound data files # noqa 301
+  command: >-
+    podman cp
+    {{ unbound_data_dir }}/{{ item }}.conf
+    {{ unbound_container_id }}:/etc/unbound/local.d/
+  loop: "{{ ubd_target_domains }}"
