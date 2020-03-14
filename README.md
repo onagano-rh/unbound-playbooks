@@ -71,4 +71,5 @@ Tasks
   - todo: exclusive control for git repo and container
 - todo: not git private key, do it inprior by yourself
 - todo: unbound container role
-- todo: customize local-zone type
+- todo: customize local-zone type (static or nxdomain?)
+- todo: customize git commit log

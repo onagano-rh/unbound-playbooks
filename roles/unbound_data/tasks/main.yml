@@ -108,6 +108,10 @@
     unbound-control local_data {{ item.name }} A {{ item.address }}
     {% endif %}
   loop: "{{ dns_entries }}"
+  register: res
+
+- debug:
+    var: res
 
 # TODO: Test newly added entries
 
@@ -121,5 +125,11 @@
     awk '{ printf "local-data: \"%s %s %s\"\n", $1, $4, $5 }'
     ) > {{ unbound_data_dir }}/{{ item }}.conf
   loop: "{{ ubd_target_domains }}"
-  # notify:
-  #   - Git commit and push
+
+- name: Check if files are modified or not # noqa 303
+  command: git status
+  register: res_git_status
+  changed_when: '"Changes not staged for commit:" in res_git_status.stdout'
+  notify:
+    - Git commit
+    - Git push

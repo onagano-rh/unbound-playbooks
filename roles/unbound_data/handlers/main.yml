@@ -1,2 +1,14 @@
 ---
-# handlers file for roles/unbound_data
+- name: Git commit
+  shell: |
+    cat <<EOF | git commit -aF -
+    Commit by Ansible
+
+    Ansible Tower
+      Job ID: {{ tower_job_id | default('n/a') }}
+      Job Template Name: {{ tower_job_template_name | default('n/a') }}
+    EOF
+
+- name: Git push # noqa 303
+  # Assuming ~/.gitconfig and ~/.ssh/id_rsa exist.
+  command: git push
