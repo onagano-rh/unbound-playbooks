@@ -65,3 +65,4 @@ Tasks
 - todo: instead, test start and commit for fast startup
 - todo: exclusive control for git repo and container
 - todo: not git private key, do it inprior by yourself
+- todo: install bind-utils on tower

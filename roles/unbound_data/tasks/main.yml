@@ -19,17 +19,37 @@
   loop: "{{ dns_entries }}"
 
 - name: Start Unbound Podman container for test # noqa 301
+  # BUG WORKAROUND: "-P" option doesn't expose udp port. Use "-p" explicitly.
   command: >-
-    podman run --rm -d
-    -p {{ unbound_container.port }}:53:udp
-    -p {{ unbound_container.port }}:53:tcp
+    podman run --rm -d -p 53/tcp -p 53/udp
     {{ unbound_container.image }}
-    register: res_podman_run
+  register: res_podman_run
+
+- name: Memoize the container ID
+  set_fact:
+    podman_container_id: "{{ res_podman_run.stdout }}"
+
+- name: Determin a port randomly assined # noqa 301
+  shell: >-
+    set -o pipefail;
+    podman port {{ podman_container_id }} |
+    awk -F ':' '/udp/ {print $2}'
+  register: res_podman_port
 
 - debug:
-    var: res_podman_run
+    var: res_podman_port
+
+# BUG: Can't connect to the port actually. Podman network is still buggy?
+# - name: Wait for the container started
+#   wait_for:
+#     host: 127.0.0.1
+#     port: "{{ res_podman_port }}"
 
 - name: Wait for the container started
-  wait_for:
-    host: 127.0.0.1
-    port: "{{ unbound_container.port }}"
+  # BUG WORKAROUND: Test inside container.
+  command: podman exec test dig @localhost localhost
+  changed_when: false
+  register: res_podman_exec
+  until: res_podman_exec.rc == 0
+  retries: 10
+  delay: 3
