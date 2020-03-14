@@ -74,5 +74,5 @@
   command: >-
     podman cp
     {{ unbound_data_dir }}/{{ item }}.conf
-    {{ unbound_container_id }}:/etc/unbound/local.d/
+    {{ podman_container_id }}:/etc/unbound/local.d/
   loop: "{{ ubd_target_domains }}"
