@@ -40,10 +40,13 @@ To run against all files for test:
 
     pre-commit run --all-files
 
-To run before every Git commit:
+To run before every Git commit automatically:
 
     pre-commit install
 
+To disable the automatic execution:
+
+    pre-commit uninstall
 
 
 Tasks
@@ -51,6 +54,9 @@ Tasks
 
 - limit: unbound group hierarchy
 - limit: zero or single limit tag
+- design: bastion, not localhost
+  - awx can't do sudo on tower host
+  - set all and delegate to exploit --limit
 - todo: don't start my-unbound always
 - todo: instead, test start and commit for fast startup
 - todo: exclusive control for git repo and container
