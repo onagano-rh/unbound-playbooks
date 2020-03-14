@@ -1,0 +1,11 @@
+galaxy_info:
+  author: Osamu Nagano
+  description: To upate Unbound local-data repository.
+  license: BSD-3-Clause or MIT
+  min_ansible_version: 2.8
+  platforms:
+  - name: EL
+    versions:
+    - 8
+  galaxy_tags: []
+dependencies: []
