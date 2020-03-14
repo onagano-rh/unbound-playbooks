@@ -3,7 +3,7 @@
   assert:
     that:
       - item.name is string
-      # Check if "name" belongs to one of domain of target servers.
+      # Check if "name" belongs to one of domains of "--limit" group.
       - >-
         {% for domain in ubd_target_domains %}
         item.name.endswith('{{ domain }}')
@@ -18,6 +18,18 @@
         item.state == 'absent'
   loop: "{{ dns_entries }}"
 
-- name: Check if DNS names are managed by target servers
-  debug:
-    var: unbound_image
+- name: Start Unbound Podman container for test # noqa 301
+  command: >-
+    podman run --rm -d
+    -p {{ unbound_container.port }}:53:udp
+    -p {{ unbound_container.port }}:53:tcp
+    {{ unbound_container.image }}
+    register: res_podman_run
+
+- debug:
+    var: res_podman_run
+
+- name: Wait for the container started
+  wait_for:
+    host: 127.0.0.1
+    port: "{{ unbound_container.port }}"

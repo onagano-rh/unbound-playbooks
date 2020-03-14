@@ -13,6 +13,7 @@ Inventory
 
 Install "netaddr" Python package because "ipv4" Ansible filter is used.
 
+
 Playbooks and Roles
 ================
 
@@ -54,6 +55,8 @@ Tasks
 ================
 
 - limit: unbound group hierarchy
+  - unbound and bastion are hard coded
+  - proj1 etc. are free as long as this limit
 - limit: zero or single limit tag
 - design: bastion, not localhost
   - awx can't do sudo on tower host
