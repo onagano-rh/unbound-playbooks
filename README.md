@@ -73,3 +73,4 @@ Tasks
 - todo: unbound container role
 - todo: customize local-zone type (static or nxdomain?)
 - todo: customize git commit log
+  - include job id link to tower

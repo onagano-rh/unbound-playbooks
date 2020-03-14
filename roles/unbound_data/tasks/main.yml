@@ -24,8 +24,8 @@
     podman run --rm -d -p 53/tcp -p 53/udp
     {{ unbound_container.image }}
   register: res_podman_run
-  # notify:
-  #   - Cleanup Unbound Podman container
+  notify:
+    - Cleanup Unbound Podman container
 
 - name: Memoize the container ID
   set_fact:
@@ -67,8 +67,6 @@
     repo: "{{ unbound_data.repo }}"
     version: "{{ unbound_data.version }}"
     dest: "{{ unbound_data_dir }}"
-  # notiry:
-  #   - Cleanup Unbound data repository
 
 - name: Copy Unound data files # noqa 301
   command: >-
@@ -95,9 +93,9 @@
   changed_when: false
   register: res_podman_exec
   until: res_podman_exec.rc == 0
-  # timeout is 60 sec
-  retries: 12
-  delay: 5
+  # timeout is 300 sec
+  retries: 100
+  delay: 3
 
 - name: Update data by 'unbound-control local_data|local_data_remove' command # noqa 301
   command: >-
@@ -131,5 +129,6 @@
   register: res_git_status
   changed_when: '"Changes not staged for commit:" in res_git_status.stdout'
   notify:
-    - Git commit
-    - Git push
+    - Git commit Unbound data
+    - Git push Unbound data
+    - Cleanup local Unbound data repository
