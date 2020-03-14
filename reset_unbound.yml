@@ -2,6 +2,7 @@
 - name: Reset Unbound servers
   hosts: unbound
   become: true
+  gather_facts: false
   tasks:
     - shell: rm -rf /etc/unbound/conf.d/*
     - shell: rm -rf /etc/unbound/keys.d/*

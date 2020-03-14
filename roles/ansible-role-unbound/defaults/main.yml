@@ -1,6 +1,0 @@
----
-unbound_listen_address: 0.0.0.0
-
-unbound_network_cidr_to_allow: 192.168.122.0/24
-
-unbound_default_nameserver: 192.168.122.1
