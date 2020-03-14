@@ -1,14 +1,18 @@
 ---
 - name: Git commit
-  shell: |
-    cat <<EOF | git commit -aF -
-    Commit by Ansible
+  shell:
+    cmd: |
+      cat <<EOF | git commit -aF -
+      Commit by Ansible
 
-    Ansible Tower
-      Job ID: {{ tower_job_id | default('n/a') }}
-      Job Template Name: {{ tower_job_template_name | default('n/a') }}
-    EOF
+      Ansible Tower
+        Job ID: {{ tower_job_id | default('n/a') }}
+        Job Template Name: {{ tower_job_template_name | default('n/a') }}
+      EOF
+    chdir: "{{ unbound_data_dir }}"
 
 - name: Git push # noqa 303
   # Assuming ~/.gitconfig and ~/.ssh/id_rsa exist.
-  command: git push
+  command:
+    cmd: git push
+    chdir: "{{ unbound_data_dir }}"

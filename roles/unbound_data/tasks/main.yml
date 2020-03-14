@@ -102,7 +102,7 @@
 - name: Update data by 'unbound-control local_data|local_data_remove' command # noqa 301
   command: >-
     podman exec {{ podman_container_id }}
-    {% if item.state | default(None) | select('equalto','absent') %}
+    {% if item.state is defined and item.state == 'absent' %}
     unbound-control local_data_remove {{ item.name }}
     {% else %}
     unbound-control local_data {{ item.name }} A {{ item.address }}
@@ -126,8 +126,12 @@
     ) > {{ unbound_data_dir }}/{{ item }}.conf
   loop: "{{ ubd_target_domains }}"
 
+# TODO: Copy in the container and do unbound-checkconf again
+
 - name: Check if files are modified or not # noqa 303
-  command: git status
+  command:
+    cmd: git status
+    chdir: "{{ unbound_data_dir }}"
   register: res_git_status
   changed_when: '"Changes not staged for commit:" in res_git_status.stdout'
   notify:
