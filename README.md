@@ -58,6 +58,9 @@ Tasks
   - unbound and bastion are hard coded
   - proj1 etc. are free as long as this limit
 - limit: zero or single limit tag
+- limit: add and remove are orderd
+  - add is tested, remove is not
+  - remove deletes all entries, after that you can add
 - design: bastion, not localhost
   - awx can't do sudo on tower host
   - set all and delegate to exploit --limit
@@ -67,3 +70,5 @@ Tasks
   - todo: install bind-utils on tower
   - todo: exclusive control for git repo and container
 - todo: not git private key, do it inprior by yourself
+- todo: unbound container role
+- todo: customize local-zone type

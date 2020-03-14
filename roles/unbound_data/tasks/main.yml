@@ -33,7 +33,7 @@
 
 - name: Determin a port randomly assined # noqa 301
   shell: >-
-    set -o pipefail;
+    set -o pipefail &&
     podman port {{ podman_container_id }} |
     awk -F ':' '/udp/ {print $2}'
   register: res_podman_port
@@ -76,3 +76,50 @@
     {{ unbound_data_dir }}/{{ item }}.conf
     {{ podman_container_id }}:/etc/unbound/local.d/
   loop: "{{ ubd_target_domains }}"
+
+- name: Check the data file format by unbound-checkconf command
+  command: >-
+    podman exec {{ podman_container_id }}
+    unbound-checkconf
+  changed_when: false
+
+- name: Restart Unobund in the container # noqa 301
+  command: >-
+    podman exec {{ podman_container_id }}
+    systemctl restart unbound
+
+- name: Wait for the service started
+  # BUG WORKAROUND: Test inside container.
+  command: >-
+    podman exec {{ podman_container_id }} dig @localhost localhost
+  changed_when: false
+  register: res_podman_exec
+  until: res_podman_exec.rc == 0
+  # timeout is 60 sec
+  retries: 12
+  delay: 5
+
+- name: Update data by 'unbound-control local_data|local_data_remove' command # noqa 301
+  command: >-
+    podman exec {{ podman_container_id }}
+    {% if item.state | default(None) | select('equalto','absent') %}
+    unbound-control local_data_remove {{ item.name }}
+    {% else %}
+    unbound-control local_data {{ item.name }} A {{ item.address }}
+    {% endif %}
+  loop: "{{ dns_entries }}"
+
+# TODO: Test newly added entries
+
+- name: Dump data by 'unbound-control list_local_data' command # noqa 301
+  shell: >-
+    set -o pipefail &&
+    (
+    echo 'local-zone: {{ item }}. static' &&
+    podman exec {{ podman_container_id }} unbound-control list_local_data |
+    fgrep '.{{ item }}.' |
+    awk '{ printf "local-data: \"%s %s %s\"\n", $1, $4, $5 }'
+    ) > {{ unbound_data_dir }}/{{ item }}.conf
+  loop: "{{ ubd_target_domains }}"
+  # notify:
+  #   - Git commit and push
