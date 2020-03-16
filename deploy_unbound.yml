@@ -4,4 +4,6 @@
   become: true
   gather_facts: false
   roles:
-    - unbound
+    - role: unbound
+      tags:
+        - deploy

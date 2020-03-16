@@ -8,7 +8,7 @@
 - name: Check if the image already exists or not
   command: >-
     podman image exists
-    {{ ubc_unbound_image_name }}:{{ ubc_unbound_image_tag }}
+    {{ ubc_image_name }}
   register: res_podman_image_exists
   changed_when: res_podman_image_exists.rc != 0
   failed_when: false
@@ -35,8 +35,8 @@
 
 - name: Build by Podman
   podman_image:
-    name: "{{ ubc_unbound_image_name }}"
-    tag: "{{ ubc_unbound_image_tag }}"
+    name: "{{ unbound_container.image }}"
+    tag: "{{ unbound_container.tag }}"
     path: "{{ ubc_build_dir }}"
     state: build
   register: res_podman_build

@@ -2,7 +2,7 @@
 - name: Start once to generate initial files like unbound_control.key # noqa 301
   command: >-
     podman run -d --name {{ ubc_temp_container_name }}
-    {{ ubc_unbound_image_name }}:{{ ubc_unbound_image_tag }}
+    {{ ubc_image_name }}
   notify:
     - Cleanup Unbound temp container
 
@@ -23,4 +23,4 @@
 - name: Commit the container # noqa 301
   command: >-
     podman commit {{ ubc_temp_container_name }}
-    {{ ubc_unbound_image_name }}:{{ ubc_unbound_image_tag }}
+    {{ ubc_image_name }}

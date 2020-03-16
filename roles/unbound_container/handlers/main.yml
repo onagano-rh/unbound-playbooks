@@ -6,4 +6,8 @@
 
 - name: Cleanup Unbound temp container
   command: >-
-    podman container rm -f temp_unbound
+    podman container rm -f {{ ubc_temp_container_name }}
+
+- name: Cleanup Unbound Podman container
+  # "stop" is enough to delete because of "run --rm"
+  command: podman stop {{ podman_container_id }}

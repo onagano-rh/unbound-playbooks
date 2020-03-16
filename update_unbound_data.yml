@@ -6,7 +6,7 @@
   roles:
     - role: unbound_container
       tags:
-        - unbound_container
+        - update
     - role: unbound_data
       tags:
-        - unbound_data
+        - update

@@ -1,7 +1,8 @@
 ---
 - block:
     - include_tasks: build_image.yml
-    - include_tasks: start_once.yml
+    - include_tasks: init_container.yml
       when: res_podman_build is changed
+    - include_tasks: start_container.yml
   delegate_to: bastion
   run_once: true
