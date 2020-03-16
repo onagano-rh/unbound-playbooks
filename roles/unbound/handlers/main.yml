@@ -1,2 +1,5 @@
 ---
-# handlers file for roles/unbound
+- name: Restart Unbound server
+  service:
+    name: unbound
+    state: restarted

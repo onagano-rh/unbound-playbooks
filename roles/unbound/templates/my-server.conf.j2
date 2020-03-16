@@ -1,0 +1,17 @@
+server:
+  interface: 127.0.0.1
+  {% for address in unbound_listen_addresses -%}
+  interface: {{ address }}
+  {% endfor %}
+
+  {% for network in unbound_allowed_networks -%}
+  access-control: {{ network }} allow
+  {% endfor %}
+
+  do-ip6: no
+
+forward-zone:
+  name: "."
+  {% for nameserver in unbound_default_nameservers -%}
+  forward-addr: {{ nameserver }}
+  {% endfor %}

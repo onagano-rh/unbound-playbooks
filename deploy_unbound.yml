@@ -1,6 +1,6 @@
 ---
 - name: Deploy Unbound servers
-  hosts: all
+  hosts: unbound
   become: true
   gather_facts: false
   roles:
