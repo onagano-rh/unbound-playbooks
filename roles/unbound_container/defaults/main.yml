@@ -1,0 +1,7 @@
+---
+ubc_build_dir: "{{ playbook_dir }}/unbound-container"
+
+ubc_unbound_image_name: localhost/my-unbound
+ubc_unbound_image_tag: ci
+
+ubc_temp_container_name: temp_unbound

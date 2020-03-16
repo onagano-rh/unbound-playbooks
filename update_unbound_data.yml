@@ -3,6 +3,10 @@
   hosts: all
   become: true
   gather_facts: false
+  roles:
+    - role: unbound_container
+      tags:
+        - unbound_container
   tasks:
     - import_role:
         name: unbound_data

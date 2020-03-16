@@ -1,0 +1,31 @@
+---
+- name: Install container tools
+  # Check by 'dnf module list'
+  dnf:
+    name: '@container-tools:rhel8/common'
+    state: present
+
+- name: Create a build directory
+  file:
+    path: "{{ ubc_build_dir }}"
+    state: directory
+  notify:
+    - Cleanup Unbound container build directory
+
+- name: Copy Dockerfile
+  template:
+    src: Dockerfile.j2
+    dest: "{{ ubc_build_dir }}/Dockerfile"
+
+- name: Copy Unbound conf file
+  template:
+    src: my-server.conf.j2
+    dest: "{{ ubc_build_dir }}/my-server.conf"
+
+- name: Build by Podman
+  podman_image:
+    name: "{{ ubc_unbound_image_name }}"
+    tag: "{{ ubc_unbound_image_tag }}"
+    path: "{{ ubc_build_dir }}"
+    state: build
+  register: res_podman_build

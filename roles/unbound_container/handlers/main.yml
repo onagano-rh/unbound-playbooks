@@ -1,0 +1,9 @@
+---
+- name: Cleanup Unbound container build directory
+  file:
+    path: "{{ ubc_build_dir }}"
+    state: absent
+
+- name: Cleanup Unbound temp container
+  command: >-
+    podman container rm -f temp_unbound

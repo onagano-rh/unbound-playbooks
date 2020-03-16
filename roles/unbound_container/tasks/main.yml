@@ -1,0 +1,7 @@
+---
+- block:
+    - include_tasks: build_image.yml
+    - include_tasks: start_once.yml
+      when: res_podman_build is changed
+  delegate_to: bastion
+  run_once: true
