@@ -1,0 +1,134 @@
+---
+- name: Valdate dns_entries
+  assert:
+    that:
+      - item.name is string
+      # Check if "name" belongs to one of domains of "--limit" group.
+      - >-
+        {% for domain in ubd_target_domains %}
+        item.name.endswith('{{ domain }}')
+        or
+        {% endfor %}
+        false
+      # If "address" is defined, check it by "ipv4" filter.
+      # If "address" is not defined, check if "state" is "absent" or not.
+      - >-
+        item.address | default(None) | ipv4
+        or
+        item.state == 'absent'
+  loop: "{{ dns_entries }}"
+
+- name: Start Unbound Podman container for test # noqa 301
+  # BUG WORKAROUND: "-P" option doesn't expose udp port. Use "-p" explicitly.
+  command: >-
+    podman run --rm -d -p 53/tcp -p 53/udp
+    {{ unbound_container.image }}
+  register: res_podman_run
+  notify:
+    - Cleanup Unbound Podman container
+
+- name: Memoize the container ID
+  set_fact:
+    podman_container_id: "{{ res_podman_run.stdout }}"
+
+- name: Determin a port randomly assined # noqa 301
+  shell: >-
+    set -o pipefail &&
+    podman port {{ podman_container_id }} |
+    awk -F ':' '/udp/ {print $2}'
+  register: res_podman_port
+
+# BUG: Can't connect to the port actually. Podman network is still buggy?
+# - name: Wait for the container started
+#   wait_for:
+#     host: 127.0.0.1
+#     port: "{{ res_podman_port.stdout }}"
+
+- name: Wait for the container started
+  # BUG WORKAROUND: Test inside container.
+  command: >-
+    podman exec {{ podman_container_id }} dig @localhost localhost
+  changed_when: false
+  register: res_podman_exec
+  until: res_podman_exec.rc == 0
+  # timeout is 60 sec
+  retries: 12
+  delay: 5
+
+- name: Memoize the repository path
+  set_fact:
+    unbound_data_dir: "{{ playbook_dir }}/unbound-data"
+
+- debug:
+    var: unbound_data_dir
+
+- name: Clone Unbound data repository
+  git:
+    repo: "{{ unbound_data.repo }}"
+    version: "{{ unbound_data.version }}"
+    dest: "{{ unbound_data_dir }}"
+
+- name: Copy Unound data files # noqa 301
+  command: >-
+    podman cp
+    {{ unbound_data_dir }}/{{ item }}.conf
+    {{ podman_container_id }}:/etc/unbound/local.d/
+  loop: "{{ ubd_target_domains }}"
+
+- name: Check the data file format by unbound-checkconf command
+  command: >-
+    podman exec {{ podman_container_id }}
+    unbound-checkconf
+  changed_when: false
+
+- name: Restart Unobund in the container # noqa 301
+  command: >-
+    podman exec {{ podman_container_id }}
+    systemctl restart unbound
+
+- name: Wait for the service started
+  # BUG WORKAROUND: Test inside container.
+  command: >-
+    podman exec {{ podman_container_id }} dig @localhost localhost
+  changed_when: false
+  register: res_podman_exec
+  until: res_podman_exec.rc == 0
+  # timeout is 300 sec
+  retries: 100
+  delay: 3
+
+- name: Update data by 'unbound-control local_data|local_data_remove' command # noqa 301
+  command: >-
+    podman exec {{ podman_container_id }}
+    {% if item.state is defined and item.state == 'absent' %}
+    unbound-control local_data_remove {{ item.name }}
+    {% else %}
+    unbound-control local_data {{ item.name }} A {{ item.address }}
+    {% endif %}
+  loop: "{{ dns_entries }}"
+
+# TODO: Test newly added entries
+
+- name: Dump data by 'unbound-control list_local_data' command # noqa 301
+  shell: >-
+    set -o pipefail &&
+    (
+    echo 'local-zone: {{ item }}. static' &&
+    podman exec {{ podman_container_id }} unbound-control list_local_data |
+    fgrep '.{{ item }}.' |
+    awk '{ printf "local-data: \"%s %s %s\"\n", $1, $4, $5 }'
+    ) > {{ unbound_data_dir }}/{{ item }}.conf
+  loop: "{{ ubd_target_domains }}"
+
+# TODO: Copy in the container and do unbound-checkconf again
+
+- name: Check if files are modified or not # noqa 303
+  command:
+    cmd: git status
+    chdir: "{{ unbound_data_dir }}"
+  register: res_git_status
+  changed_when: '"Changes not staged for commit:" in res_git_status.stdout'
+  notify:
+    - Git commit Unbound data
+    - Git push Unbound data
+    - Cleanup local Unbound data repository

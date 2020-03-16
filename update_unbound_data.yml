@@ -7,22 +7,6 @@
     - role: unbound_container
       tags:
         - unbound_container
-  tasks:
-    - import_role:
-        name: unbound_data
-      vars:
-        # test data
-        dns_entries:
-          - name: svr01.hoge.example.com
-            address: 111.111.111.111
-          - name: svr01.hoge.example.com
-            address: 111.111.111.112
-          - name: svr02.foo.example.com
-            state: absent
-          - name: svr01.bar.example.com
-            address: 222.222.222.222
-      # Run only on "bastion" once.
-      # Instead of 'hosts: bastion', use 'hosts: all'
-      # to exploit --limit option of ansible-playbook.
-      delegate_to: bastion
-      run_once: true
+    - role: unbound_data
+      tags:
+        - unbound_data
