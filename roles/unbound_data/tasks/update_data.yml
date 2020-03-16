@@ -1,28 +1,4 @@
 ---
-- name: Check if dns_entries has entries
-  assert:
-    that:
-      - dns_entries | length > 0
-
-- name: Valdate dns_entries
-  assert:
-    that:
-      - item.name is string
-      # Check if "name" belongs to one of domains of "--limit" group.
-      - >-
-        {% for domain in ubd_target_domains %}
-        item.name.endswith('{{ domain }}')
-        or
-        {% endfor %}
-        false
-      # If "address" is defined, check it by "ipv4" filter.
-      # If "address" is not defined, check if "state" is "absent" or not.
-      - >-
-        item.address | default(None) | ipv4
-        or
-        item.state == 'absent'
-  loop: "{{ dns_entries }}"
-
 - name: Check if the container already started by unbound_container role
   assert:
     that:

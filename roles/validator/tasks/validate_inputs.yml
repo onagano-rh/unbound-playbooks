@@ -1,0 +1,26 @@
+---
+- name: Check if dns_entries has entries
+  assert:
+    that:
+      - dns_entries | length > 0
+
+- name: Valdate dns_entries
+  assert:
+    that:
+      - dns_entry.name is string
+      # Check if "name" belongs to one of domains of "--limit" group.
+      - >-
+        {% for domain in ubd_target_domains %}
+        dns_entry.name.endswith('{{ domain }}')
+        or
+        {% endfor %}
+        false
+      # If "address" is defined, check it by "ipv4" filter.
+      # If "address" is not defined, check if "state" is "absent" or not.
+      - >-
+        dns_entry.address | default(None) | ipv4
+        or
+        dns_entry.state == 'absent'
+  loop: "{{ dns_entries }}"
+  loop_control:
+    loop_var: dns_entry

@@ -4,6 +4,9 @@
   become: true
   gather_facts: false
   roles:
+    - role: validator
+      tags:
+        - update
     - role: unbound_container
       tags:
         - update
