@@ -3,6 +3,7 @@
 
 - [Inventory](#inventory)
 - [Playbooks and Roles](#playbooks-and-roles)
+- [Pre-commit using yamllint and ansible-lint](#pre-commit-using-yamllint-and-ansible-lint)
 - [Tasks](#tasks)
 
 <!-- markdown-toc end -->
@@ -61,9 +62,11 @@ Tasks
 - limit: add and remove are orderd
   - add is tested, remove is not
   - remove deletes all entries, after that you can add
+- limit: resolv.conf is not modified
 - design: bastion, not localhost
   - awx can't do sudo on tower host
   - set all and delegate to exploit --limit
+  - role shouldn't depends on inventory in general
 - todo: don't start my-unbound always
 - deploy playbook
   - todo: instead, test start and commit for fast startup
