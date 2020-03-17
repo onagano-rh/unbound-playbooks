@@ -14,7 +14,7 @@
 
 - name: Clone Unbound data repository
   git:
-    repo: "{{ unbound_data.repo }}"
+    repo: "{{ unbound_data.push_url }}"
     version: "{{ unbound_data.version }}"
     dest: "{{ unbound_data_dir }}"
 
