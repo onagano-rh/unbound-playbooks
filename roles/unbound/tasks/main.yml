@@ -27,7 +27,7 @@
 - name: Accept self-signed certificate when git clone
   git_config:
     name: http.sslVerify
-    value: false
+    value: 'False'
     scope: global
 
 - name: Pull Unbound data file repository
