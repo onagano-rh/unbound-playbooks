@@ -1,0 +1,33 @@
+---
+- name: Git add in repo {{ git_dest }}
+  command: # noqa 303
+    cmd: git add .
+    chdir: "{{ git_dest }}"
+  when: git_enable_add_handler
+
+- name: Git commit in repo {{ git_dest }}
+  shell:
+    cmd: |
+      cat <<EOF | git commit -aF -
+      Commit by Ansible
+
+      {% if tower_job_id is defined %}
+      Ansible Tower:
+        Job Template Name: {{ tower_job_template_name }}
+        Job Link: https://tower.example.com/#/jobs/playbook/{{ tower_job_id }}
+      {% endif %}
+      EOF
+    chdir: "{{ git_dest }}"
+  when: git_enable_commit_handler or git_enable_push_handler
+
+- name: Git push in repo {{ git_dest }}
+  command: # noqa 303
+    cmd: git push
+    chdir: "{{ git_dest }}"
+  when: git_enable_push_handler
+
+- name: Git remove repo {{ git_dest }}
+  file:
+    path: "{{ git_dest }}"
+    state: absent
+  when: git_enable_remove_handler

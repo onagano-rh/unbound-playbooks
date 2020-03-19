@@ -1,0 +1,56 @@
+---
+- name: Validate necessary variables
+  assert:
+    that:
+      - git_repo | default()
+    fail_msg: |
+      git_repo variable must be something like:
+        git_repo: https://gitlab.example.com/test-user/test-repo.git
+        git_repo: git@gitlab.example.com:test-user/test-repo.git
+      Use "git@..." one and configure SSH if you want to push.
+
+- name: Configure http.sslVerify in ~/.gitconfig
+  git_config:
+    name: http.sslVerify
+    value: "{{ git_config_ssl_verify }}"
+    scope: global
+
+- name: Configure user.name in ~/.gitconfig
+  git_config:
+    name: user.name
+    value: "{{ git_config_user }}"
+    scope: global
+  when: git_enable_commit_handler
+
+- name: Configure user.email in ~/.gitconfig
+  git_config:
+    name: user.email
+    value: "{{ git_config_email }}"
+    scope: global
+  when: git_enable_commit_handler
+
+- name: Copy private key to push
+  copy:
+    src: "{{ git_ssh_private_key }}"
+    dest: "./.ssh/{{ git_ssh_private_key }}"
+    mode: '0600'
+  when: git_enable_push_handler
+
+- name: Configure core.sshCommand in ~/.gitconfig to push
+  git_config:
+    name: core.sshCommand
+    value: "{{ git_config_ssh_command }}"
+    scope: global
+  when: git_enable_push_handler
+
+- name: Clone the repository to {{ git_dest }}
+  git:
+    repo: "{{ git_repo }}"
+    dest: "{{ git_dest }}"
+    version: "{{ git_version }}"
+    force: true
+  notify:
+    - Git add in repo {{ git_dest }}
+    - Git commit in repo {{ git_dest }}
+    - Git push in repo {{ git_dest }}
+    - Git remove repo {{ git_dest }}

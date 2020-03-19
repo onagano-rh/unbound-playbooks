@@ -1,0 +1,34 @@
+---
+# Only the necessary variable.
+# Setting https url is enough to just clone.
+git_repo: ""
+
+git_dest: "./{{ git_repo | basename }}"
+git_version: master
+
+# Set false if the repo uses self-signed certificate.
+git_config_ssl_verify: true
+
+# Set true if you want to delete the cloned repository.
+git_enable_remove_handler: false
+
+# Set true if you want to add untracked files.
+git_enable_add_handler: false
+
+# Set true and configure *_user and *_email
+# if you want to commit the changes.
+git_enable_commit_handler: false
+git_config_user: "Test User"
+git_config_email: "test-user@example.com"
+
+# Set true and put your private key
+# if you want to push the commit.
+# The git_repo needs to be ssh, not https.
+git_enable_push_handler: false
+# Copy your private key in files directory.
+# Don't forget to do 'ansible-vault encrypt' on it.
+git_ssh_private_key: id_rsa
+git_config_ssh_command: >-
+  ssh -i ~/.ssh/{{ git_ssh_private_key }}
+  -F /dev/null
+  -o StrictHostKeyChecking=no
