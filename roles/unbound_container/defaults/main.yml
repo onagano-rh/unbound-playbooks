@@ -1,5 +1,6 @@
 ---
-ubc_build_dir: "{{ playbook_dir }}/unbound-container"
+# "." is ansible_user's home directory
+ubc_build_dir: "./unbound-container"
 
 ubc_image_name: "{{ unbound_container.image }}:{{ unbound_container.tag }}"
 

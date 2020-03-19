@@ -5,9 +5,17 @@
       - podman_container_id is defined
       - podman_container_port is defined
 
+- name: Create a temp dir for unbound-data git repo
+  tempfile:
+    prefix: unbound-data_
+    state: directory
+  register: res_mktemp
+  notify:
+    - Cleanup local Unbound data repository
+
 - name: Memoize the repository path
   set_fact:
-    unbound_data_dir: "{{ playbook_dir }}/unbound-data"
+    unbound_data_dir: "{{ res_mktemp.path }}"
 
 - debug:
     var: unbound_data_dir
@@ -92,10 +100,3 @@
   notify:
     - Git commit Unbound data
     - Git push Unbound data
-    - Cleanup local Unbound data repository
-
-- name: Cleanup local Unbound data repository
-  file:
-    path: "{{ unbound_data_dir }}"
-    state: absent
-  when: res_git_status is not changed
