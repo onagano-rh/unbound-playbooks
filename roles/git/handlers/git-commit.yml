@@ -1,0 +1,21 @@
+---
+- name: Create a temp file for commit log message
+  tempfile:
+    state: file
+    prefix: commit-log-message_
+  register: res_tempfile
+
+- name: Copy the commit log message template
+  template:
+    src: commit-log-message.txt.j2
+    dest: "{{ res_tempfile.path }}"
+
+- name: Git commit with the commit log message file
+  command: # noqa 303
+    cmd: git commit -a -F {{ res_tempfile.path }}
+    chdir: "{{ git_dest }}"
+
+- name: Remove the commit log message file
+  file:
+    path: "{{ res_tempfile.path }}"
+    state: absent

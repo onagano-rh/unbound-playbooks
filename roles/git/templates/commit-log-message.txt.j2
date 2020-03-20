@@ -1,0 +1,7 @@
+Commit by Ansible
+
+{% if tower_job_id is defined %}
+Ansible Tower:
+  Job Template Name: {{ tower_job_template_name }}
+  Job Link: https://tower.example.com/#/jobs/playbook/{{ tower_job_id }}
+{% endif %}

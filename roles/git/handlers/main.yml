@@ -6,18 +6,7 @@
   when: git_enable_add_handler
 
 - name: Git commit in repo {{ git_dest }}
-  shell:
-    cmd: |
-      cat <<EOF | git commit -aF -
-      Commit by Ansible
-
-      {% if tower_job_id is defined %}
-      Ansible Tower:
-        Job Template Name: {{ tower_job_template_name }}
-        Job Link: https://tower.example.com/#/jobs/playbook/{{ tower_job_id }}
-      {% endif %}
-      EOF
-    chdir: "{{ git_dest }}"
+  include_tasks: handlers/git-commit.yml
   when: git_enable_commit_handler or git_enable_push_handler
 
 - name: Git push in repo {{ git_dest }}
