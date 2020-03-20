@@ -1,3 +1,4 @@
+---
 galaxy_info:
   author: Osamu Nagano
   description: To validate combination of variables, inventory, and --limit option.

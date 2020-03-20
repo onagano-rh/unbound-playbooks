@@ -3,17 +3,11 @@
   file:
     path: "{{ ubc_build_dir }}"
     state: absent
-  delegate_to: bastion
-  run_once: true
 
 - name: Cleanup Unbound temp container
   command: >-
     podman container rm -f {{ ubc_temp_container_name }}
-  delegate_to: bastion
-  run_once: true
 
 - name: Cleanup Unbound Podman container
   # "stop" is enough to delete because of "run --rm"
   command: podman stop {{ podman_container_id }}
-  delegate_to: bastion
-  run_once: true

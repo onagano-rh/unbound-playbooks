@@ -1,5 +1,2 @@
 ---
-- block:
-    - include_tasks: update_data.yml
-  delegate_to: bastion
-  run_once: true
+- include_tasks: update_data.yml

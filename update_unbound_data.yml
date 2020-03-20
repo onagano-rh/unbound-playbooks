@@ -3,13 +3,11 @@
   hosts: all
   become: true
   gather_facts: false
-  roles:
-    - role: validator
-      tags:
-        - update
-    - role: unbound_container
-      tags:
-        - update
-    - role: unbound_data
+  tasks:
+    - include_role:
+        name: unbound_data
+        apply:
+          delegate_to: bastion
+          run_once: true
       tags:
         - update

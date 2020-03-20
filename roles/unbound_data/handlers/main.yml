@@ -10,20 +10,14 @@
         Job Template Name: {{ tower_job_template_name | default('n/a') }}
       EOF
     chdir: "{{ unbound_data_dir }}"
-  delegate_to: bastion
-  run_once: true
 
 - name: Git push Unbound data
   # Assuming ~/.gitconfig and ~/.ssh/id_rsa exist.
   command: # noqa 303
     cmd: git push
     chdir: "{{ unbound_data_dir }}"
-  delegate_to: bastion
-  run_once: true
 
 - name: Cleanup local Unbound data repository
   file:
     path: "{{ unbound_data_dir }}"
     state: absent
-  delegate_to: bastion
-  run_once: true

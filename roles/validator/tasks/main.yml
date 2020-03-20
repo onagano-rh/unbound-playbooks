@@ -1,5 +1,2 @@
 ---
-- block:
-    - include_tasks: validate_inputs.yml
-  delegate_to: bastion
-  run_once: true
+- include_tasks: validate_inputs.yml
