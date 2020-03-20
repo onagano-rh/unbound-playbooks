@@ -8,7 +8,7 @@ podman_build_dir: ./podman-build-dir
 podman_start_container: true
 podman_container_name: test-container
 podman_container_id: ""
-podman_port_map: null
+podman_port_map: {}
 podman_exec_prefix: "podman exec {{ podman_container_name }}"
 
 podman_enable_stop_handler: false

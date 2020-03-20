@@ -1,3 +1,4 @@
+---
 galaxy_info:
   author: Osamu Nagano
   description: To setup Unbound server.
@@ -8,4 +9,9 @@ galaxy_info:
     versions:
     - 8
   galaxy_tags: []
-dependencies: []
+dependencies:
+  - role: git
+    vars:
+      git_repo: "{{ unbound_data.pull_url }}"
+      git_version: "{{ unbound_data.version }}"
+      git_config_ssl_verify: false

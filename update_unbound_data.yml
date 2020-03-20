@@ -15,19 +15,22 @@
         address: 10.1.2.1
       - name: svr01.foo.example.com
         address: 10.2.1.1
-      - name: svr99.foo.example.com
+      - name: svr02.foo.example.com
+        address: 10.2.1.2
+      - name: svr04.foo.example.com
         state: absent
 
   pre_tasks:
     - block:
-      - include_vars: # noqa 502
+      - name: Include variables first
+        include_vars:
           roles/unbound_data/defaults/main.yml
       - include_tasks:
-          roles/unbound_data/tasks/validation.yml
+          roles/unbound_data/tasks/validate.yml
       delegate_to: bastion
       run_once: true
       tags:
-        - validation
+        - validate
 
   tasks:
     - include_role:

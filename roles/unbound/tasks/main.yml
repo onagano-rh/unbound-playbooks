@@ -24,21 +24,9 @@
   notify:
     - Restart Unbound server
 
-- name: Accept self-signed certificate when git clone
-  git_config:
-    name: http.sslVerify
-    value: 'False'
-    scope: global
-
-- name: Pull Unbound data file repository
-  git:
-    repo: "{{ unbound_data.pull_url }}"
-    dest: ./unbound-data # under ansible_user's home dir
-    version: "{{ unbound_data.version }}"
-
 - name: Copy Unbound data files of this server
   copy:
-    src: "./unbound-data/{{ item }}.conf"
+    src: "{{ git_dest }}/{{ item }}.conf"
     dest: /etc/unbound/local.d/{{ item }}.conf
     remote_src: true
     backup: true
