@@ -9,9 +9,6 @@ git_version: master
 # Set false if the repo uses self-signed certificate.
 git_config_ssl_verify: true
 
-# Set true if you want to delete the cloned repository.
-git_enable_remove_handler: false
-
 # Set true if you want to add untracked files.
 git_enable_add_handler: false
 
@@ -32,3 +29,6 @@ git_config_ssh_command: >-
   ssh -i ~/.ssh/{{ git_ssh_private_key }}
   -F /dev/null
   -o StrictHostKeyChecking=no
+
+# Set true if you want to delete the cloned repository.
+git_enable_remove_handler: false

@@ -14,6 +14,13 @@
   command: # noqa 303
     cmd: git commit -a -F {{ res_tempfile.path }}
     chdir: "{{ git_dest }}"
+  register: res_git_commit
+  failed_when: >-
+    not (
+    res_git_commit.rc == 0 or
+    "nothing to commit" in res_git_commit.stdout or
+    "nothing added to commit" in res_git_commit.stdout
+    )
 
 - name: Remove the commit log message file
   file:

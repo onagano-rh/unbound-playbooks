@@ -5,26 +5,16 @@
       - podman_container_id | default()
       - podman_port_map is defined
 
-- name: Create a temp dir for unbound-data git repo
-  tempfile:
-    prefix: unbound-data_
-    state: directory
-  register: res_mktemp
-  notify:
-    - Cleanup local Unbound data repository
-
-- name: Memoize the repository path
-  set_fact:
-    unbound_data_dir: "{{ res_mktemp.path }}"
-
-- debug:
-    var: unbound_data_dir
-
-- name: Clone Unbound data repository
-  git:
-    repo: "{{ unbound_data.push_url }}"
-    version: "{{ unbound_data.version }}"
-    dest: "{{ unbound_data_dir }}"
+- name: Wait for the service started
+  # BUG WORKAROUND: Open port is not used. Test inside container.
+  command: >-
+    podman exec {{ podman_container_id }} dig @localhost localhost
+  changed_when: false
+  register: res_podman_exec
+  until: res_podman_exec.rc == 0
+  # timeout is 300 sec
+  retries: 100
+  delay: 3
 
 - name: Copy Unound data files in the container # noqa 301
   command: >-
@@ -90,13 +80,3 @@
     podman exec {{ podman_container_id }}
     unbound-checkconf
   changed_when: false
-
-- name: Check if files are modified or not # noqa 303
-  command:
-    cmd: git status
-    chdir: "{{ unbound_data_dir }}"
-  register: res_git_status
-  changed_when: '"Changes not staged for commit:" in res_git_status.stdout'
-  notify:
-    - Git commit Unbound data
-    - Git push Unbound data
