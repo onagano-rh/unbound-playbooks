@@ -10,5 +10,4 @@ galaxy_info:
     - 8
   galaxy_tags: []
 dependencies:
-  - role: validator
   - role: unbound_container
