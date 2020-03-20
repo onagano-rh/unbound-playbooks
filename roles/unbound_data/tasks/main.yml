@@ -1,2 +1,102 @@
 ---
-- include_tasks: update_data.yml
+- name: Check if the container already started by unbound_container role
+  assert:
+    that:
+      - podman_container_id | default()
+      - podman_port_map is defined
+
+- name: Memorize container port
+  set_fact:
+    # Use 53/tcp instead of 53/udp port becaues of a Podman bug.
+    # Don't test for removed entries becaues it takes long time.
+    dns_port: "{{ podman_port_map['53/tcp'] }}"
+
+- name: Wait for the service started by podman role
+  command: >-
+    dig @127.0.0.1 -p {{ dns_port }} +tcp localhost
+  changed_when: false
+  register: res_podman_exec
+  until: res_podman_exec.rc == 0
+  # timeout is 300 sec
+  retries: 60
+  delay: 5
+
+- name: Copy Unound data files in the container
+  command: >-
+    podman cp
+    {{ unbound_data_dir }}/{{ item }}.conf
+    {{ podman_container_id }}:/etc/unbound/local.d/
+  loop: "{{ ubd_target_domains }}"
+  changed_when: false
+
+- name: Check the data file format by unbound-checkconf command
+  command: >-
+    podman exec {{ podman_container_id }}
+    unbound-checkconf
+  changed_when: false
+
+- name: Restart Unobund in the container
+  command: >-
+    podman exec {{ podman_container_id }}
+    systemctl restart unbound
+  changed_when: false
+
+- name: Wait for the service started
+  command: >-
+    dig @127.0.0.1 -p {{ dns_port }} +tcp localhost
+  changed_when: false
+  register: res_podman_exec
+  until: res_podman_exec.rc == 0
+  # timeout is 300 sec
+  retries: 60
+  delay: 5
+
+- name: Update data by 'unbound-control {local_data|local_data_remove}'
+  command: >-
+    podman exec {{ podman_container_id }}
+    {% if item.state is defined and item.state == 'absent' %}
+    unbound-control local_data_remove {{ item.name }}
+    {% else %}
+    unbound-control local_data {{ item.name }} A {{ item.address }}
+    {% endif %}
+  loop: "{{ dns_entries }}"
+  changed_when: false
+
+- name: Test added or updated entries
+  shell: >-
+    set -o pipefail &&
+    dig @127.0.0.1 -p {{ dns_port }} +tcp +short
+    {% if item.state is defined and item.state == 'absent' %}
+    localhost | fgrep 127.0.0.1
+    {% else %}
+    {{ item.name }} | fgrep {{ item.address }}
+    {% endif %}
+  loop: "{{ dns_entries }}"
+  changed_when: false
+
+- name: Dump data by 'unbound-control list_local_data' command
+  # noqa 301
+  shell: >-
+    set -o pipefail &&
+    echo 'local-zone: {{ item }}. static' &&
+    (
+    podman exec {{ podman_container_id }} unbound-control list_local_data |
+    fgrep '.{{ item }}.' |
+    awk '{ printf "local-data: \"%s %s %s\"\n", $1, $4, $5 }' |
+    sort
+    ) > {{ unbound_data_dir }}/{{ item }}.conf
+  loop: "{{ ubd_target_domains }}"
+
+- name: Copy updated data files in the container again # noqa 301
+  command: >-
+    podman cp
+    {{ unbound_data_dir }}/{{ item }}.conf
+    {{ podman_container_id }}:/etc/unbound/local.d/
+  loop: "{{ ubd_target_domains }}"
+  changed_when: false
+
+- name: Check the updated data file by unbound-checkconf command
+  command: >-
+    podman exec {{ podman_container_id }}
+    unbound-checkconf
+  changed_when: false

@@ -48,7 +48,7 @@
   set_fact:
     str_port_dict: |
       {% for line in res_podman_port.stdout_lines %}
-      - {{ line | regex_replace('(.+) -> 0\.0\.0\.0\:(.+)', '\1: \2') }}
+      {{ line | regex_replace('(.+) -> 0\.0\.0\.0\:(.+)', '\1: \2') }}
       {% endfor %}
 
 - name: Constract dict from the YAML string

@@ -1,6 +1,4 @@
 ---
-dns_entries: []
-
 # 2 level of hierarchy
 ubd_str_hgd_list: |
   {% for host in groups['unbound'] %}
@@ -29,11 +27,11 @@ ubd_dg_dict: "{{ dict( ubd_domains | zip(ubd_groups) ) }}"
 # 0 or single limit
 ubd_target_group: "{{ ansible_limit | default('unbound') }}"
 
-str_ubd_target_domains: |
+ubd_str_target_domains: |
   {% for host in groups[ubd_target_group] %}
   {% for domain in hostvars[host].unbound_managing_domains %}
   - {{ domain }}
   {% endfor %}
   {% endfor %}
 
-ubd_target_domains: "{{ str_ubd_target_domains | from_yaml | unique }}"
+ubd_target_domains: "{{ ubd_str_target_domains | from_yaml | unique }}"
