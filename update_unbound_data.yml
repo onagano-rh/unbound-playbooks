@@ -19,5 +19,7 @@
         apply:
           delegate_to: bastion
           run_once: true
+      vars:
+        test_container_name: "unbound_{{ tower_job_id | default('0') }}"
       tags:
         - update

@@ -2,8 +2,8 @@
 - name: Check if the container already started by unbound_container role
   assert:
     that:
-      - podman_container_id is defined
-      - podman_container_port is defined
+      - podman_container_id | default()
+      - podman_port_map is defined
 
 - name: Create a temp dir for unbound-data git repo
   tempfile:

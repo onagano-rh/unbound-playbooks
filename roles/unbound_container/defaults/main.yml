@@ -1,7 +1,0 @@
----
-# "." is ansible_user's home directory
-ubc_build_dir: "./unbound-container"
-
-ubc_image_name: "{{ unbound_container.image }}:{{ unbound_container.tag }}"
-
-ubc_temp_container_name: temp_unbound
