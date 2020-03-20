@@ -1,0 +1,59 @@
+---
+# Don't want to check every time.
+#- name: Install container tools
+#  # Check by 'dnf module list'
+#  dnf:
+#    name: '@container-tools:rhel8/common'
+#    state: present
+
+- name: Create a build directory
+  file:
+    path: "{{ podman_build_dir }}"
+    state: directory
+
+- name: Copy build artifacts
+  copy:
+    src: files/
+    dest: "{{ podman_build_dir }}"
+
+- name: Build image by Podman
+  podman_image:
+    name: "{{ podman_image }}"
+    tag: "{{ podman_tag }}"
+    path: "{{ podman_build_dir }}"
+    state: build
+
+- name: Start a container from the image
+  # noqa 301
+  command: >-
+    podman run -d -P --name {{ podman_container_name }}
+    {{ podman_image_name }}
+  register: res_podman_run
+  when: podman_start_container
+  notify:
+    - Podman stop {{ podman_container_name }}
+    - Podman remove {{ podman_container_name }}
+
+- name: Memorize the container ID
+  set_fact:
+    podman_container_id: "{{ res_podman_run.stdout }}"
+
+- name: Check asigned ports
+  command: >-
+    podman port {{ podman_container_name }}
+  changed_when: false
+  register: res_podman_port
+
+- name: Constract YAML in string
+  set_fact:
+    str_port_dict: |
+      {% for line in res_podman_port.stdout_lines %}
+      - {{ line | regex_replace('(.+) -> 0\.0\.0\.0\:(.+)', '\1: \2') }}
+      {% endfor %}
+
+- name: Constract dict from the YAML string
+  set_fact:
+    podman_port_map: "{{ str_port_dict | from_yaml }}"
+
+- debug:
+    var: podman_port_map
