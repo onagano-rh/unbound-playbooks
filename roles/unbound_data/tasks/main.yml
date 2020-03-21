@@ -24,7 +24,7 @@
 - name: Copy Unound data files in the container
   command: >-
     podman cp
-    {{ unbound_data_dir }}/{{ item }}.conf
+    {{ git_dest }}/{{ item }}.conf
     {{ podman_container_id }}:/etc/unbound/local.d/
   loop: "{{ ubd_target_domains }}"
   changed_when: false
@@ -84,13 +84,13 @@
     fgrep '.{{ item }}.' |
     awk '{ printf "local-data: \"%s %s %s\"\n", $1, $4, $5 }' |
     sort
-    ) > {{ unbound_data_dir }}/{{ item }}.conf
+    ) > {{ git_dest }}/{{ item }}.conf
   loop: "{{ ubd_target_domains }}"
 
 - name: Copy updated data files in the container again # noqa 301
   command: >-
     podman cp
-    {{ unbound_data_dir }}/{{ item }}.conf
+    {{ git_dest }}/{{ item }}.conf
     {{ podman_container_id }}:/etc/unbound/local.d/
   loop: "{{ ubd_target_domains }}"
   changed_when: false
