@@ -60,7 +60,7 @@
   - unbound-dataリポジトリの使用するタグやコミットIDを指定する。
 
 参考リンク:
-- [hosts.yml](./blob/master/hosts.yml)
+- [hosts.yml](hosts.yml)
 - [unbound.conf](https://nlnetlabs.nl/documentation/unbound/unbound.conf/)
 
 ## Gitリポジトリ
@@ -90,14 +90,14 @@
 
 依存関係:
 
-- [site.yml](./blob/master/site.yml)
-  - [update_unbound_data.yml](./blob/master/update_unbound_data.yml)
-    - [roles/unbound_data](./tree/master/roles/unbound_data)
-      - [roles/git](./tree/master/roles/git)
-      - [roles/podman](./tree/master/roles/podman)
-  - [deploy_unbound.yml](./blob/master/deploy_unbound.yml)
-    - [roles/unbound](./tree/master/roles/unbound)
-      - [roles/git](./tree/master/roles/git)
+- [site.yml](site.yml)
+  - [update_unbound_data.yml](update_unbound_data.yml)
+    - [roles/unbound_data](roles/unbound_data)
+      - [roles/git](roles/git)
+      - [roles/podman](roles/podman)
+  - [deploy_unbound.yml](deploy_unbound.yml)
+    - [roles/unbound](roles/unbound)
+      - [roles/git](roles/git)
 
 注記:
 
@@ -159,7 +159,7 @@ unbound-dataリポジトリのURLのみである。
     unbound_data_pull_url: https://gitlab.example.com/test-user/unbound-data.git
 ```
 
-Gitでpushする際のSSHの秘密鍵を、[roles/git/files](./tree/master/roles/git/files)
+Gitでpushする際のSSHの秘密鍵を、[roles/git/files](roles/git/files)
 内に、`ansible-vault encrypt`した状態であらかじめコピーしておく。
 ファイル名が"id_rsa"と違う場合は変数git_ssh_private_keyも上書きしておく。
 
@@ -172,8 +172,8 @@ $ ansible-vault encrypt --vault-password-file /tmp/my-password.txt roles/git/fil
 その他gitロールに関しては、コミット時のユーザ名とメールアドレス、
 コミットログのメッセージのテンプレートなど、変えておいた方がよいものもある。
 
-- [roles/git/defaults/main.yml](./blob/master/roles/git/defaults/main.yml)
-- [roles/git/templates/commit-log-message.txt.j2](./blob/master/roles/git/templates/commit-log-message.txt.j2)
+- [roles/git/defaults/main.yml](roles/git/defaults/main.yml)
+- [roles/git/templates/commit-log-message.txt.j2](roles/git/templates/commit-log-message.txt.j2)
 
 ロールが使用する変数については各プレイブック内で適切な値に記述済みである。
 各ロール変数はロール名でプレフィクスをつけており、そのロールの defaults/main.yml
