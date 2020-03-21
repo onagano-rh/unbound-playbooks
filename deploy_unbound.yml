@@ -6,5 +6,9 @@
   serial: 1
   roles:
     - role: unbound
+      vars:
+        git_repo: "{{ unbound_data_pull_url }}"
+        git_version: "{{ unbound_data_version }}"
+        git_config_ssl_verify: false
       tags:
         - deploy

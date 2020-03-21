@@ -11,7 +11,3 @@ galaxy_info:
   galaxy_tags: []
 dependencies:
   - role: git
-    vars:
-      git_repo: "{{ unbound_data.pull_url }}"
-      git_version: "{{ unbound_data.version }}"
-      git_config_ssl_verify: false

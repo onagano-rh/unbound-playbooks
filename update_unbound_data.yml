@@ -36,14 +36,14 @@
   roles:
     - role: unbound_data
       vars:
-        git_repo: "{{ unbound_data.push_url }}"
-        git_version: "{{ unbound_data.version }}"
+        git_repo: "{{ unbound_data_push_url }}"
+        git_version: "{{ unbound_data_version }}"
         git_dest: "/tmp/unbound_data_{{ tower_job_id | default('0') }}"
         git_enable_commit_handler: true
         git_enable_push_handler: true
         git_enable_remove_handler: true
-        podman_image: "{{ unbound_container.image }}"
-        podman_tag: "{{ unbound_container.tag }}"
+        podman_image: "{{ unbound_container_image }}"
+        podman_tag: "{{ unbound_container_tag }}"
         podman_container_name: "unbound_{{ tower_job_id | default('0') }}"
         podman_enable_stop_handler: true
         podman_enable_remove_handler: true
