@@ -13,6 +13,7 @@
 <!-- markdown-toc end -->
 
 
+
 インベントリと変数、環境について
 ================
 
@@ -85,27 +86,36 @@
 参考リンク:
 - [Unbound，知ってる？　この先10年を見据えたDNS](https://gihyo.jp/admin/feature/01/unbound/0004)
 
+
+
 プレイブックとロールの説明
 ================
 
 依存関係:
 
-- [site.yml](site.yml)
-  - [update_unbound_data.yml](update_unbound_data.yml)
-    - [roles/unbound_data](roles/unbound_data)
-      - [roles/git](roles/git)
-      - [roles/podman](roles/podman)
-  - [deploy_unbound.yml](deploy_unbound.yml)
-    - [roles/unbound](roles/unbound)
-      - [roles/git](roles/git)
+- [update_unbound_data.yml](update_unbound_data.yml)
+  - [roles/unbound_data](roles/unbound_data)
+    - [roles/git](roles/git)
+    - [roles/podman](roles/podman)
+- [deploy_unbound.yml](deploy_unbound.yml)
+  - [roles/unbound](roles/unbound)
+    - [roles/git](roles/git)
 
 注記:
 
-- site.ymlでは両プレイブックをインポートしているだけ。
-  - 各プレイブックは比較的独立しており、個別に実行することもできる。
 - ロールには meta/main.yml の dependencies を通して依存関係がある。
   - gitとpodmanのロールは汎用的になっており、特にgitロールは各プレイブックで間接的に使われる。
-- プレイブック update_unbound_data.yml について
+
+参考リンク:
+- [Playbook Keywords](https://docs.ansible.com/ansible/latest/reference_appendices/playbooks_keywords.html)
+- [Using Roles (タスクの実行順序)](https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html#using-roles)
+- [16. ジョブテンプレート (Tower上で定義されるマジック変数の一覧)](https://docs.ansible.com/ansible-tower/3.6.2/html_ja/userguide/job_templates.html)
+- [Delegation, Rolling Updates, and Local Actions](https://docs.ansible.com/ansible/latest/user_guide/playbooks_delegation.html)
+- [Error Handling In Playbooks (force_handlers)](https://docs.ansible.com/ansible/latest/user_guide/playbooks_error_handling.html)
+- [Creating Reusable Playbooks, Dynamic vs. Static](https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse.html#dynamic-vs-static)
+
+## プレイブック update_unbound_data.yml について
+
   - およそ以下のような処理を行う。
     - 後述する変数"dns_entries"を解析・バリデーションし、ドメイン名からそれを管理するグループを割り出す。
     - unbound-dataリポジトリを一時ディレクトリにクローンする。
@@ -129,7 +139,9 @@
       - プレイブックに`force_handlers: true`と書くことでエラー時にもハンドラーを起動することはできるが、トラブルシュートのためにもこれはデフォルトのままfalseにしている。
     - ハンドラーは、実際にはロールのタスク内で毎回notifyされ、ハンドラーのタスクのwhenの条件を見て実際の処理を行うかスキップするかを判断している。
       - そのために`git_enable_remove_handler`や`podman_enable_remove_handler`といった変数をハンドラーごとに用意し、ロールの defaults/main.yml 内で適切なデフォルト値を設定している。
-- プレイブック deploy_unbound.yml について
+
+## プレイブック deploy_unbound.yml について
+
   - unboundグループのサーバに対して、unboundロールを用いてデータファイルを配置する。
     - `serial: 1`が指定されており、サーバ一台ずつに動作していく。
   - Unboundのサービスをゼロから構築せねばならなくなったときなどは、このプレイブックのみを用いてGitの特定バージョンから状態を復旧できる。
@@ -138,13 +150,7 @@
       - httpsで自己署名証明書を使っている場合はgitロールで定義されている変数の設定`git_config_ssl_verify: false`を忘れないようにする。
   - /etc/resolv.conf の編集は行わない。
 
-参考リンク:
-- [Playbook Keywords](https://docs.ansible.com/ansible/latest/reference_appendices/playbooks_keywords.html)
-- [Using Roles (タスクの実行順序)](https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html#using-roles)
-- [16. ジョブテンプレート (Tower上で定義されるマジック変数の一覧)](https://docs.ansible.com/ansible-tower/3.6.2/html_ja/userguide/job_templates.html)
-- [Delegation, Rolling Updates, and Local Actions](https://docs.ansible.com/ansible/latest/user_guide/playbooks_delegation.html)
-- [Error Handling In Playbooks (force_handlers)](https://docs.ansible.com/ansible/latest/user_guide/playbooks_error_handling.html)
-- [Creating Reusable Playbooks, Dynamic vs. Static](https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse.html#dynamic-vs-static)
+
 
 プレイブックの実行方法
 ================
@@ -179,25 +185,34 @@ $ ansible-vault encrypt --vault-password-file /tmp/my-password.txt roles/git/fil
 各ロール変数はロール名でプレフィクスをつけており、そのロールの defaults/main.yml
 内に定義が容易に見つかる。
 
-後は、後述するdns_entriesをtest-data.ymlに記述して、
-それとVaultパスワードを指定してプレイブックを実行するだけである。
+まず、後述するdns_entriesをtest-data.ymlに記述して、
+それとVaultパスワードを指定してupdate_unbound_data.ymlを実行する。
 
 ```shell
 $ vi test-data.yml
-$ ansible-playbook site.yml -e @test-data.yml --vault-password-file /tmp/my-password.txt
+$ ansible-playbook update_unbound_data.yml \
+  -e @test-data.yml \
+  --vault-password-file /tmp/my-password.txt
 ```
 
 必要に応じて、dns_entriesの内容と整合するリミットオプションを付けて対象を制限することができる。
 
 ```shell
-$ ansible-playbook site.yml -e @test-data.yml --vault-password-file /tmp/my-password.txt -l proj1
+$ ansible-playbook update_unbound_data.yml \
+  -e @test-data.yml \
+  --vault-password-file /tmp/my-password.txt -l proj1
 ```
 
-deploy_unbound.ymlの方のプレイブックに関しては`git push`は行わないので
+deploy_unbound.ymlのプレイブックに関しては`git push`は行わないので
 dns_entries変数やVaultパスワードの指定は要らない。
 
 ```shell
 $ ansible-playbook deploy_unbound.yml
+```
+リミットオプションについてはupdate_unbound_data.ymlと同様である。
+
+```shell
+$ ansible-playbook deploy_unbound.yml -l proj1
 ```
 
 なお、現時点のpodmanとunboundパッケージではrootユーザでないと正常にインストールや実行が
@@ -236,21 +251,54 @@ dns_entries:
 - [unbound-control(8)](https://nlnetlabs.nl/documentation/unbound/unbound-control/)
 - [unbound-checkconf(8)](https://nlnetlabs.nl/documentation/unbound/unbound-checkconf/)
 
+## 未知のバグについて
+
+site.ymlとして両プレイブックを連続実行するものも考えられる。
+
+```shell
+$ cat site.yml
+---
+- import_playbook: update_unbound_data.yml
+- import_playbook: deploy_unbound.yml
+```
+
+ただし、不明な条件で、定義しているはずのunbound_data_pull_url変数が見つからないという
+エラーが発生し、未知のバグの存在が疑われる。
+
+```
+TASK [git : Clone the repository to ./unbound-data.git] ***************************************************************
+Saturday 21 March 2020  22:13:58 +0900 (0:00:00.014)       0:02:42.043 ********
+ERROR! 'unbound_data_pull_url' is undefined
+```
+
+そのため、安全策でsite.ymlは実行せず、各プレイブックを分て実行することにする。
+複数のプレイブックを連携させるには、Ansible Tower上ではワークフローを使うことになる。
+
+
+
 Ansible Towerへの設定例
 ================
 
-Pre-commit using yamllint and ansible-lint
+参考リンク:
+- [jsmartin/tower_populator](https://github.com/jsmartin/tower_populator)
+- [Ansible Tower CLI](https://tower-cli.readthedocs.io/en/latest/index.html)
+- [AWX Command Line Interface](https://github.com/ansible/awx/tree/devel/awxkit/awxkit/cli/docs)
+- [16.1. インベントリーのインポート](https://docs.ansible.com/ansible-tower/3.6.2/html_ja/administration//tower-manage.html#inventory-import)
+
+
+
+Pre-commitの使い方
 ================
 
-To install:
+インストール方法:
 
     pip install pre-commit yamllint ansible-lint
 
-Or ("molecule" has them as dependencies):
+もしくは"molecule"の依存性により:
 
     pip install molecule
 
-Configuraiton:
+設定:
 
     pre-commit sample-config > .pre-commit-config.yaml
     vi .pre-commit-config.yaml
@@ -259,15 +307,21 @@ Configuraiton:
   - https://yamllint.readthedocs.io/en/stable/integration.html#integration-with-pre-commit
 - For ansible-lint
   - https://github.com/ansible/ansible-lint#pre-commit-setup
+  - [`entry: ansible-lint`を追加しないと動かない？](.pre-commit-config.yaml#L27)
 
-To run against all files for test:
+マニュアルでのlintの起動方法:
 
     pre-commit run --all-files
+    yamllint .
+    ansible-lint
 
-To run before every Git commit automatically:
+コミット時に実行されるのはコミットしようとするファイルのみなので、
+任意のファイルをチェックしたいなら上記のように実行する。
+
+コミット時に自動実行されるよう.git/hooks/pre-commitをインストール:
 
     pre-commit install
 
-To disable the automatic execution:
+自動実行をやめる場合:
 
     pre-commit uninstall
