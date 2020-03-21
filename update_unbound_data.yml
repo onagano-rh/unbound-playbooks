@@ -4,22 +4,6 @@
   become: true
   gather_facts: false
 
-  vars:
-    # Test data
-    dns_entries:
-      - name: svr01.hoge.example.com
-        address: 10.1.1.1
-      - name: svr01.hoge.example.com
-        address: 10.1.1.2
-      - name: svr02.hoge.example.com
-        address: 10.1.2.1
-      - name: svr01.foo.example.com
-        address: 10.2.1.1
-      - name: svr02.foo.example.com
-        address: 10.2.1.2
-      - name: svr04.foo.example.com
-        state: absent
-
   pre_tasks:
     - block:
       - name: Include variables first

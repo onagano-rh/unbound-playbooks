@@ -78,13 +78,15 @@
   # noqa 301
   shell: >-
     set -o pipefail &&
-    echo 'local-zone: {{ item }}. static' &&
+    grep '^local-zone: ' {{ git_dest }}/{{ item }}.conf >
+    {{ git_dest }}/{{ item }}.conf.temp &&
     (
     podman exec {{ podman_container_id }} unbound-control list_local_data |
     fgrep '.{{ item }}.' |
     awk '{ printf "local-data: \"%s %s %s\"\n", $1, $4, $5 }' |
     sort
-    ) > {{ git_dest }}/{{ item }}.conf
+    ) >> {{ git_dest }}/{{ item }}.conf.temp &&
+    mv {{ git_dest }}/{{ item }}.conf.temp {{ git_dest }}/{{ item }}.conf
   loop: "{{ ubd_target_domains }}"
 
 - name: Copy updated data files in the container again # noqa 301

@@ -1,10 +1,9 @@
 ---
-# Don't want to check every time.
-#- name: Install container tools
-#  # Check by 'dnf module list'
-#  dnf:
-#    name: '@container-tools:rhel8/common'
-#    state: present
+- name: Install container tools
+  # Check by 'dnf module list'
+  dnf:
+    name: '@container-tools:rhel8/common'
+    state: present
 
 - name: Create a build directory
   file:
