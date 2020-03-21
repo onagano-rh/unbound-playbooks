@@ -1,4 +1,6 @@
 ---
+# Loaded by handlers/main.yml
+
 - name: Create a temp file for commit log message
   tempfile:
     state: file
@@ -11,7 +13,7 @@
     dest: "{{ res_tempfile.path }}"
 
 - name: Git commit with the commit log message file
-  command: # noqa 303
+  command: # noqa 301 303
     cmd: git commit -a -F {{ res_tempfile.path }}
     chdir: "{{ git_dest }}"
   register: res_git_commit

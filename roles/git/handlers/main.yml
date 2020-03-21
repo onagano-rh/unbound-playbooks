@@ -6,7 +6,7 @@
   when: git_enable_add_handler
 
 - name: Git commit in repo {{ git_dest }}
-  include_tasks: handlers/git-commit.yml
+  include_tasks: git-commit.yml
   when: git_enable_commit_handler or git_enable_push_handler
 
 - name: Git push in repo {{ git_dest }}
