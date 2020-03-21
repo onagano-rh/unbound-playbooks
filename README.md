@@ -271,13 +271,149 @@ Saturday 21 March 2020  22:13:58 +0900 (0:00:00.014)       0:02:42.043 ********
 ERROR! 'unbound_data_pull_url' is undefined
 ```
 
-そのため、安全策でsite.ymlは実行せず、各プレイブックを分て実行することにする。
-複数のプレイブックを連携させるには、Ansible Tower上ではワークフローを使うことになる。
+回避策として、Extra Variablesに明示的に指定する。
+
+```yaml
+unbound_data_pull_url: 'https://gitlab.example.com/test-user/unbound-data.git'
+```
+
+複数のプレイブックを連携させる方法として、Ansible Tower上ではワークフローも使える。
 
 
 
-Ansible Towerへの設定例
+Ansible Towerへの設定と実行例
 ================
+
+
+1. Ansible Towerの管理者(admin)でログインする。
+2. Organizationsで"Infra Org"を作成する。
+3. Usersで下記の設定のユーザを作成する。
+
+   Organization: Infra Org  
+   Email: infra-admin@example.com  
+   Username: infra-admin  
+   Password: (任意)  
+   Confirm Password: (任意)  
+   User Type: Normal User  
+
+4. Organizations > Infra Org > Permissions で
+   infra-adminに"Admin"ロールを与える。
+5. infra-adminユーザでログインし直す。
+6. Usersで以下のユーザを追加する。
+
+   Organization: Infra Org  
+   Email: proj1-user01@example.com  
+   Username: proj1-user01  
+   Password: (任意)  
+   Confirm Password: (任意)  
+
+   Organization: Infra Org  
+   Email: proj2-user01@example.com  
+   Username: proj2-user01  
+   Password: (任意)  
+   Confirm Password: (任意)  
+
+7. Teamsで以下のチームを作成する。
+
+   Name: Proj1 Team  
+   Organization: Infra Org  
+   
+   Name: Proj2 Team  
+   Organization: Infra Org  
+
+8. 各チームにユーザを所属させる。
+
+   Teams > Proj1 Team > Users: proj1-user01  
+   Teams > Proj2 Team > Users: proj2-user01  
+
+9. Projectsでunbound-playbooksリポジトリのプロジェクトを作成する。
+
+   Name: unbound-playbooks  
+   Organization: Infra Org  
+   SCM Type: Git  
+   SCM URL: https://gitlab.example.com/test-user/unbound-playbooks.git  
+   Update Revison on Launch: Check  
+
+   作成後にプロジェクト取得のジョブが成功するのを確認する。
+
+10. Inventoriesでプロジェクトを元にインベントリを作成する。
+
+    Name: unbound-playbooks  
+    Organization: Infra Org  
+
+    Sourcesタブで作成したプロジェクトをソースに指定する。
+
+    Name: hosts.yml  
+    Source: Sourced from a Project  
+    Project: unbound-playbooks  
+    Inventory File: hosts.yml  
+    Overwrite: Check  
+    Overwrite Variables: Check  
+    Update on Project Update: Check  
+
+    作成後にインベントリ取得のジョブが成功するのを確認する。
+
+11. Credentialsで以下のクレデンシャルを作成する。
+
+    Name: My SSH Key  
+    Organization: Infra Org  
+    Credential Type: Machine  
+    SSH Private Key: (使用したSSH秘密鍵(~/.ssh/id_rsa)をコピペする)  
+
+    Name: My Vault Password  
+    Organization: Infra Org  
+    Credential Type: Vault  
+    Vault Password: (使用したVaultパスワード)  
+
+12. Templatesで以下のジョブテンプレートを作成する。
+
+    Name: Update DNS Entries for proj1  
+    Job Type: Run  
+    Inventory: unbound-playbooks  
+    Project: unbound-playbooks  
+    Playbook: update_unbound_data.yml  
+    Credentials: "My SSH Key", "My Vault Password"  
+    Limit: proj1  
+    Verbosity: 0 (Normal)  
+    Extra Variables: (dns_entriesの見本を入れておく。上述のunbound_data_pull_urlの回避策も要る可能性あり。)  
+    Prompt on Launch: Check  
+
+13. Templatesで作成したテンプレートをコピーし、以下の変更を行う。
+
+    Name: Deploy Unbound for prj1  
+    Playbook: deploy_unbound.yml  
+    Extra Variables: (ブランク)  
+    Prompt on Launch: Uncheck
+
+14. Templatesで作成した2つのテンプレートを連続実行するワークフローを作成する。
+
+    Name: Update and Deploy Unbound for proj1  
+    Organization: Infra Org  
+    Limit: proj1  
+    Extra Variables: (dns_entriesの見本を入れておく。上述のunbound_data_pull_urlの回避策も要る可能性あり。)  
+    Prompt on Launch: Check  
+
+    ワークフロービジュアライザで以下のように編集する。
+
+    Start直後のノードに  
+    Template: Update DNS Entries for proj1
+    Run: Always  
+
+    その成功時のノードに  
+    Template: Deploy Unbound for proj1
+    Run: On Success  
+
+    作成したワークフローのPermissionsタブで"Proj 1 Team"に"Execute"ロールを与える。
+
+15. 同様に、"proj1"の部分を"proj2"に変えたワークフローを作成する。
+
+16. proj1-user01ユーザでログインし直す。
+
+17. My Viewsで"Update and Deploy Unbound for proj1"をローンチする。  
+    ポップアップされるExtra Variablesの入力ではproj1で管理するドメインのdns_entriesを入力する。  
+
+18. 同様にproj2-user01でログインし直し、proj2のドメインを更新できることを確認する。
+
 
 参考リンク:
 - [jsmartin/tower_populator](https://github.com/jsmartin/tower_populator)
